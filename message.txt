@@ -1,0 +1,6 @@
+Server tra ve:
+1. REQ_LOGI:
+"REQ_LOGI{\"username\": \"tien\", \"password\": \"1234567\"}"
+-> {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"} => DUng tk mk
+{"status": 0} (Mat khau hoac ten dn sai/Ko co)
+2. 

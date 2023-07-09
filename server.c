@@ -21,6 +21,8 @@
 /* Receive and echo message to client */
 void *echo(void *);
 MYSQL *connection;
+MYSQL_RES *result;
+MYSQL_ROW row;
 char *json_str;
 typedef struct Account
 {
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
         mysql_close(connection);
         return 1;
     }
-    // Create table2
+    // Create table
     if (mysql_query(connection, query_create_table_1) != 0 || mysql_query(connection, query_create_table_2) != 0 || mysql_query(connection, query_create_table_3) != 0 || mysql_query(connection, query_create_table_4) != 0 || mysql_query(connection, query_create_table_5) != 0 || mysql_query(connection, query_create_table_6) != 0 || mysql_query(connection, query_create_table_7) != 0)
     {
         fprintf(stderr, "Failed to create table: %s\n", mysql_error(connection));
@@ -195,10 +197,6 @@ int main(int argc, char *argv[])
     // Clean up resources
     mysql_free_result(result);
 
-    // Clean up resources
-    mysql_close(connection);
-    printf("Database closed!\n");
-
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     { /* calls socket() */
         perror("\nError: ");
@@ -236,6 +234,9 @@ int main(int argc, char *argv[])
         /* For each client, spawns a thread, and the thread handles the new client */
         pthread_create(&tid, NULL, &echo, connfd);
     }
+    // Clean up resources
+    mysql_close(connection);
+    printf("Database closed!\n");
     close(listenfd);
     return 0;
 }
@@ -250,7 +251,10 @@ void *echo(void *arg)
     char *keyString;
     char *objectString;
     int keyNumber;
-    char* query;
+    char *query;
+    char *response = (char *)malloc(250 * sizeof(char));
+    char *tempStr = (char *)malloc(150 * sizeof(char));
+    char numStr[15];
 
     connfd = *((int *)arg);
     free(arg);
@@ -258,7 +262,9 @@ void *echo(void *arg)
 
     while (1)
     {
+        // strcpy(response, "");
         bytes_received = recv(connfd, buff, BUFF_SIZE - 1, 0);
+        printf("Thead_add:%d\n", connfd);
 
         if (bytes_received < 0)
             perror("\nError: ");
@@ -280,30 +286,153 @@ void *echo(void *arg)
                 query = getQuerySQL(keyString, objectString);
                 printf("%s\n", query);
 
-                //Process and send back to client
-                if(strlen(keyString)== 0){
+                // Process and send back to client
+                if (strlen(keyString) == 0)
+                {
                     bytes_sent = send(connfd, query, (int)strlen(query), 0); /* inform the client account not exist */
-                if (bytes_sent < 0)
-                {
-                    perror("\nError: ");
+                    if (bytes_sent < 0)
+                    {
+                        perror("\nError: ");
+                    }
+                    else
+                    {
+                        printf("Send back Oke!\n");
+                    }
                 }
                 else
                 {
-                    printf("Send back Oke!\n");
-                }
-                } else {
+                    if (strcmp(keyString, "REQ_LOGI") == 0)
+                    { // Login account
+                        // username and password
+                        printf("REQ_LOGI ne\n");
+                        // Query to database
+                        printf("Query databse\n");
+                        printf("%s\n", query);
+                        result = updateQuery(connection, query);
+                        if (result == NULL)
+                        {
+                            fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                            mysql_close(connection);
+                        }
+                        printf("317\n");
+                        // Check if data is present
+                        unsigned long num_rows = mysql_num_rows(result);
+                        if (num_rows == 0)
+                        {
+                            // Send wrong password or username to user
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(0));
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
 
-                }
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        else
+                        {
+                            // Update thread addres database
+                            row = mysql_fetch_row(result);
+                            strcpy(tempStr, "UPDATE user SET thread_address =");
+                            sprintf(numStr, "%d", connfd);
+                            strcat(tempStr, numStr);
+                            strcat(tempStr, " WHERE id=");
+                            strcat(tempStr, row[0]);
+                            strcat(tempStr, ";");
+                            printf("%s\n", tempStr);
+                            if (mysql_query(connection, tempStr))
+                            {
+                                fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
+                                mysql_close(connection);
+                                return 1;
+                            }
 
+                            // Send the json string to client
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(1));
+                            json_object_set_new(json, "id", json_integer(atoi(row[0])));
+                            json_object_set_new(json, "name", json_string(row[4]));
+                            json_object_set_new(json, "age", json_string(row[5]));
+                            json_object_set_new(json, "phone", json_string(row[6]));
+                            json_object_set_new(json, "address", json_string(row[7]));
 
-                bytes_sent = send(connfd, query, (int)strlen(query), 0); /* inform the client account not exist */
-                if (bytes_sent < 0)
-                {
-                    perror("\nError: ");
-                }
-                else
-                {
-                    printf("Send back Oke!\n");
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
+
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                            free(tempStr);
+                        }
+                    }
+                    else if (strcmp(keyString, "REQ_REGI") == 0)
+                    {
+                        // Register account
+                        bytes_sent = send(connfd, query, (int)strlen(query), 0); /* inform the client account not exist */
+                        if (bytes_sent < 0)
+                        {
+                            perror("\nError: ");
+                        }
+                        else
+                        {
+                            printf("Send back Oke!\n");
+                        }
+                    }
+                    else if (strcmp(keyString, "REQ_CPAS") == 0)
+                    {
+                        // userId, newpassword
+                    }
+                    else if (strcmp(keyString, "REQ_LOCA") == 0)
+                    {
+                        // Requets get location infor
+                        // locationId
+                    }
+                    else if (strcmp(keyString, "REQ_CDET") == 0)
+                    {
+                        printf("Change user\n");
+                        // Change user infor
+                    }
+                    else if (strcmp(keyString, "PUT_SHLC") == 0)
+                    {
+                        // Put the share location
+                        // userId, name, type, address
+                    }
+                    else if (strcmp(keyString, "PUT_RVIE") == 0)
+                    {
+                        // Push comment
+                        // userId, locationId, content
+                    }
+                    else if (strcmp(keyString, "GET_LOCA") == 0)
+                    {
+                        // Get the location infor
+                        // locationId
+                    }
+                    else if (strcmp(keyString, "GET_FRIE") == 0)
+                    {
+                        // Get list of friend
+                        // userId
+                        // select id, name, age, phone, address  from friend join user on friend.user2 = user.id WHERE friend.user1 = 1;
+                    }
+                    else if (strcmp(keyString, "GET_SLOC") == 0)
+                    {
+                        // GET save location
+                        //  userId
+                    }
+                    else if (strcmp(keyString, "GET_FLOC") == 0)
+                    {
+                        // GET favorite location
+                        //  userId
+                    }
                 }
             }
         }

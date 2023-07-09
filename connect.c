@@ -52,7 +52,9 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, "' AND password = '");
         strcat(temp, password);
         strcat(temp, "';");
-    } else if(strcmp(key, "REQ_REGI") == 0){
+    }
+    else if (strcmp(key, "REQ_REGI") == 0)
+    {
         // Register account
         // username, password
         username = json_string_value(json_object_get(root, "username"));
@@ -63,7 +65,9 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, "', '");
         strcat(temp, password);
         strcat(temp, "');");
-    } else if(strcmp(key, "REQ_CPAS") == 0){
+    }
+    else if (strcmp(key, "REQ_CPAS") == 0)
+    {
         printf("63\n");
         // userId, newpassword
         userId = json_integer_value(json_object_get(root, "id"));
@@ -75,23 +79,26 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, "UPDATE user SET password = '");
         strcat(temp, password);
         strcat(temp, "' WHERE id= ");
-        sprintf(numStr, "%d", userId); 
+        sprintf(numStr, "%d", userId);
         strcat(temp, numStr);
         strcat(temp, ";");
-    } else if(strcmp(key, "REQ_LOCA") == 0){
-        //Requets get location infor
-        //locationId
+    }
+    else if (strcmp(key, "REQ_LOCA") == 0)
+    {
+        // Requets get location infor
+        // locationId
         locationId = json_integer_value(json_object_get(root, "locationId"));
         strcpy(temp, "");
         strcat(temp, "SELECT * from location WHERE id = ");
-        sprintf(numStr, "%d", locationId); 
+        sprintf(numStr, "%d", locationId);
         strcat(temp, numStr);
         strcat(temp, ";");
-
-    } else if(strcmp(key, "REQ_CDET") == 0){
+    }
+    else if (strcmp(key, "REQ_CDET") == 0)
+    {
         printf("Change user\n");
-        //Change user infor
-        // userId, name, address, phone, age
+        // Change user infor
+        //  userId, name, address, phone, age
         strcpy(temp, "");
         strcat(temp, "UPDATE user SET name ='");
         username = json_string_value(json_object_get(root, "name"));
@@ -110,36 +117,38 @@ char *getQuerySQL(char *key, char *json_str)
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, numStr);
-        strcat(temp,";");
-        
-    } else if(strcmp(key, "PUT_SHLC") == 0){
+        strcat(temp, ";");
+    }
+    else if (strcmp(key, "PUT_SHLC") == 0)
+    {
         // Put the share location
         // userId, name, type, address
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, "INSERT INTO location(createdBy, name, type, address) VALUES (");
-        strcat(temp,numStr);
+        strcat(temp, numStr);
         strcat(temp, ", '");
         string = json_string_value(json_object_get(root, "name"));
         strcat(temp, string);
         strcat(temp, "',");
         number = json_integer_value(json_object_get(root, "type"));
         sprintf(numStr, "%d", number);
-        strcat(temp,numStr);
+        strcat(temp, numStr);
         strcat(temp, ", '");
         string = json_string_value(json_object_get(root, "address"));
         strcat(temp, string);
         strcat(temp, "');");
-        
-    } else if(strcmp(key, "PUT_RVIE") == 0){
+    }
+    else if (strcmp(key, "PUT_RVIE") == 0)
+    {
         // Push comment
         // userId, locationId, content
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, "INSERT INTO review(createdBy, locationId, content) VALUES (");
-        strcat(temp,numStr);
+        strcat(temp, numStr);
         strcat(temp, ",");
         number = json_integer_value(json_object_get(root, "locationId"));
         sprintf(numStr, "%d", number);
@@ -148,46 +157,54 @@ char *getQuerySQL(char *key, char *json_str)
         string = json_string_value(json_object_get(root, "content"));
         strcat(temp, string);
         strcat(temp, "');");
-        
-    } else if (strcmp(key, "GET_LOCA") == 0){
-        //Get the location infor
-        //locationId
+    }
+    else if (strcmp(key, "GET_LOCA") == 0)
+    {
+        // Get the location infor
+        // locationId
         strcpy(temp, "");
         number = json_integer_value(json_object_get(root, "locationId"));
         sprintf(numStr, "%d", number);
         strcat(temp, "SELECT id, name, type, address FROM location WHERE id = ");
         strcat(temp, numStr);
         strcat(temp, ";");
-
-    } else if(strcmp(key, "GET_FRIE") == 0){
+    }
+    else if (strcmp(key, "GET_FRIE") == 0)
+    {
         // Get list of friend
         // userId
-        //select id, name, age, phone, address  from friend join user on friend.user2 = user.id WHERE friend.user1 = 1;
+        // select id, name, age, phone, address  from friend join user on friend.user2 = user.id WHERE friend.user1 = 1;
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, "SELECT id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, ";");
-    } else if(strcmp(key, "GET_SLOC") == 0){
-        //GET save location
-        // userId
+    }
+    else if (strcmp(key, "GET_SLOC") == 0)
+    {
+        // GET save location
+        //  userId
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, "SELECT location.id, name, type, address FROM location JOIN saveLocation ON location.id  = saveLocation.locationId WHERE saveLocation.userId = ");
         strcat(temp, numStr);
         strcat(temp, ";");
-    } else if(strcmp(key, "GET_FLOC") == 0){
-        //GET favorite location
-        // userId
+    }
+    else if (strcmp(key, "GET_FLOC") == 0)
+    {
+        // GET favorite location
+        //  userId
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
         strcat(temp, "SELECT location.id, name, type, address FROM location JOIN favoriteLocation ON location.id  = favoriteLocation.locationId WHERE favoriteLocation.userId = ");
         strcat(temp, numStr);
         strcat(temp, ";");
-    } else {
+    }
+    else
+    {
         printf("Not messeage type detected!\n");
     }
 
@@ -195,6 +212,22 @@ char *getQuerySQL(char *key, char *json_str)
     // free(temp);
     return temp;
 }
-char* queryDatabase(MYSQL *connection, char* query){
-    
+
+MYSQL_RES *updateQuery(MYSQL *connection, char *query)
+{
+    MYSQL_RES *resultQuery;
+    printf("Hic hu\n");
+    if (mysql_query(connection, query))
+    {
+        fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
+        mysql_close(connection);
+        return 1;
+    }
+    resultQuery = mysql_store_result(connection);
+    if (resultQuery == NULL)
+    {
+        fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+        mysql_close(connection);
+    }
+    return resultQuery;
 }
