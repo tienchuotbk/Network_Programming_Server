@@ -38,9 +38,7 @@ char *getQuerySQL(char *key, char *json_str)
         fprintf(stderr, "JSON parsing error: %s\n", error.text);
         return NULL;
     }
-    printf("Hehe\n");
     char numStr[10];
-    printf("%d\n", strcmp(key, "REQ_LOGI"));
     if (strcmp(key, "REQ_LOGI") == 0)
     { // Login account
         // username and password
@@ -68,13 +66,9 @@ char *getQuerySQL(char *key, char *json_str)
     }
     else if (strcmp(key, "REQ_CPAS") == 0)
     {
-        printf("63\n");
         // userId, newpassword
         userId = json_integer_value(json_object_get(root, "id"));
-        printf("66\n");
-        // username = json_string_value(json_object_get(root, "username"));
         password = json_string_value(json_object_get(root, "password"));
-        printf("69\n");
         strcpy(temp, "");
         strcat(temp, "UPDATE user SET password = '");
         strcat(temp, password);
@@ -96,7 +90,6 @@ char *getQuerySQL(char *key, char *json_str)
     }
     else if (strcmp(key, "REQ_CDET") == 0)
     {
-        printf("Change user\n");
         // Change user infor
         //  userId, name, address, phone, age
         strcpy(temp, "");
@@ -242,3 +235,4 @@ long updateQuery(MYSQL *connection, char *query){
     affected_rows = mysql_affected_rows(connection);
     return affected_rows;
 }
+

@@ -136,68 +136,6 @@ int main(int argc, char *argv[])
 
     printf("Tables created successfully\n");
 
-    Account acc;
-    acc.id = 1;
-    acc.age = 23;
-    acc.thread_address = 16356426;
-    strcpy(acc.name, "Hoang Tien");
-    strcpy(acc.username, "tien");
-    strcpy(acc.password, "123456");
-    strcpy(acc.address, "Thanh Nhan, Hai Ba Trung");
-    strcpy(acc.phone, "0926636524");
-
-    json_t *json = json_object();
-    json_object_set_new(json, "id", json_integer(acc.id));
-    json_object_set_new(json, "age", json_integer(acc.age));
-    json_object_set_new(json, "name", json_string(acc.name));
-    json_object_set_new(json, "username", json_string(acc.username));
-    json_object_set_new(json, "address", json_string(acc.address));
-    json_object_set_new(json, "phone", json_string(acc.phone));
-    json_str = json_dumps(json, JSON_ENCODE_ANY);
-    printf("%s\n", json_str);
-
-    char *temp; // userId, name, address, phone, age
-    temp = getQuerySQL("GET_LOCA", "{\"userId\": 1, \"content\": \"Tuey voi, Ha Long Bay\", \"locationId\": 4}");
-    printf("Query :\n");
-    printf("%s\n", temp);
-
-    if (mysql_query(connection, temp))
-    {
-        fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
-        mysql_close(connection);
-        return 1;
-    }
-
-    // Retrieve and process the result set
-    result = mysql_store_result(connection);
-    if (result == NULL)
-    {
-        fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
-        mysql_close(connection);
-        return 1;
-    }
-
-    // Fetch each row from the result set
-    while ((row = mysql_fetch_row(result)) != NULL)
-    {
-        // Process each field in the row
-        for (unsigned int i = 0; i < mysql_num_fields(result); i++)
-        {
-            if (row[i] != NULL)
-            {
-                printf("Field %u: %s\n", i, row[i]);
-            }
-            else
-            {
-                printf("Field %u: NULL\n", i);
-            }
-        }
-        printf("\n");
-    }
-
-    // Clean up resources
-    mysql_free_result(result);
-
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     { /* calls socket() */
         perror("\nError: ");
@@ -235,6 +173,7 @@ int main(int argc, char *argv[])
         /* For each client, spawns a thread, and the thread handles the new client */
         pthread_create(&tid, NULL, &echo, connfd);
     }
+    mysql_free_result(result);
     // Clean up resources
     mysql_close(connection);
     printf("Database closed!\n");
@@ -245,6 +184,7 @@ int main(int argc, char *argv[])
 void *echo(void *arg)
 {
     int connfd;
+    int userId = 0;
     char temp[BUFF_SIZE];
     int split_result;
     int bytes_sent, bytes_received;
@@ -253,7 +193,6 @@ void *echo(void *arg)
     char *objectString;
     int keyNumber;
     char *query;
-    char *response = (char *)malloc(250 * sizeof(char));
     char *tempStr = (char *)malloc(150 * sizeof(char));
     char numStr[15];
 
@@ -266,12 +205,14 @@ void *echo(void *arg)
 
     while (1)
     {
-        // strcpy(response, "");
         bytes_received = recv(connfd, buff, BUFF_SIZE - 1, 0);
         printf("Thead_add:%d\n", connfd);
 
-        if (bytes_received < 0)
-            perror("\nError: ");
+        if (bytes_received <= 0)
+        {
+            perror("\nError: Byte recceive is 0");
+            break;
+        }
         else
         {
             printf("Get %d bytes: %s \n", bytes_received, buff);
@@ -283,11 +224,15 @@ void *echo(void *arg)
             }
             else
             {
+                if (strlen(buff) < 8)
+                    break;
                 splitString(buff, &keyString, &objectString);
                 printf("First Substring: %s\n", keyString);
                 printf("Second Substring: %s\n", objectString);
                 printf("Client send message:%s with length:%d\n", buff, strlen(buff));
                 query = getQuerySQL(keyString, objectString);
+                if (query == NULL || strcmp(query, "") == 0)
+                    break;
                 printf("%s\n", query);
 
                 // Process and send back to client
@@ -297,10 +242,6 @@ void *echo(void *arg)
                     if (bytes_sent < 0)
                     {
                         perror("\nError: ");
-                    }
-                    else
-                    {
-                        printf("Send back Oke!\n");
                     }
                 }
                 else
@@ -315,7 +256,6 @@ void *echo(void *arg)
                         {
                             fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
                         }
-                        printf("317\n");
                         // Check if data is present
                         unsigned long num_rows = mysql_num_rows(result);
                         if (num_rows == 0)
@@ -335,6 +275,7 @@ void *echo(void *arg)
                         {
                             // Update thread addres database
                             row = mysql_fetch_row(result);
+                            userId = atoi(row[0]);
                             strcpy(tempStr, "UPDATE user SET thread_address =");
                             sprintf(numStr, "%d", connfd);
                             strcat(tempStr, numStr);
@@ -345,7 +286,6 @@ void *echo(void *arg)
                             if (mysql_query(connection, tempStr))
                             {
                                 fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
-                                mysql_close(connection);
                                 return 1;
                             }
 
@@ -369,7 +309,6 @@ void *echo(void *arg)
                             {
                                 printf("Send back Oke!\n");
                             }
-                            free(tempStr);
                         }
                         free(query);
                     }
@@ -394,7 +333,6 @@ void *echo(void *arg)
                         }
                         else
                         {
-                            printf("%ld row(s) were updated\n", affected_rows);
                             long long int insertedId = mysql_insert_id(connection);
                             printf("Inserted ID: %lld\n", insertedId);
                             json_t *json = json_object();
@@ -412,6 +350,7 @@ void *echo(void *arg)
                             {
                                 printf("Send back Oke!\n");
                             }
+                            json_decref(json);
                         }
                         free(query);
                     }
@@ -432,10 +371,6 @@ void *echo(void *arg)
                             {
                                 perror("\nError: ");
                             }
-                            else
-                            {
-                                printf("Send back Oke!\n");
-                            }
                         }
                         unsigned long num_rows = mysql_num_rows(result);
                         if (num_rows == 0)
@@ -445,10 +380,6 @@ void *echo(void *arg)
                             if (bytes_sent < 0)
                             {
                                 perror("\nError: ");
-                            }
-                            else
-                            {
-                                printf("Send back Oke!\n");
                             }
                         }
                         else
@@ -479,11 +410,8 @@ void *echo(void *arg)
                             {
                                 perror("\nError: ");
                             }
-                            else
-                            {
-                                printf("Send back Oke!\n");
-                            }
                         }
+                        free(query);
                     }
                     else if (strcmp(keyString, "REQ_CDET") == 0)
                     {
@@ -494,6 +422,77 @@ void *echo(void *arg)
                     {
                         // Put the share location
                         // userId, name, type, address
+                        long affected_rows = updateQuery(connection, query);
+                        if (affected_rows == 0)
+                        {
+                            // Send fail to client
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        else
+                        {
+                            // Send messgae response success to client
+                            long long int insertedId = mysql_insert_id(connection);
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(1));
+                            json_object_set_new(json, "locationId", json_integer(insertedId));
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            json_error_t error;
+                            json_t *root = json_loads(objectString, 0, &error);
+                            if (!root)
+                            {
+                                fprintf(stderr, "JSON parsing error: %s\n", error.text);
+                                return NULL;
+                            }
+                            int id = json_integer_value(json_object_get(root, "userId"));
+
+                            // Send messgae to all friend client
+                            strcpy(tempStr, "SELECT user2, thread_address from friend join user ON friend.user2 = user.id WHERE user.thread_address IS NOT NULL AND friend.user1 =");
+                            sprintf(numStr, "%d", id);
+                            strcat(tempStr, numStr);
+                            strcat(tempStr, ";");
+                            result = selectQuery(connection, tempStr);
+                            if (result == NULL)
+                            {
+                                fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                                bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                                if (bytes_sent < 0)
+                                {
+                                    perror("\nError: ");
+                                }
+                            }
+                            unsigned long num_rows = mysql_num_rows(result);
+                            if (num_rows > 0)
+                            {
+                                while ((row = mysql_fetch_row(result)) != NULL)
+                                {
+                                    if (strcmp(row[1], "") != 0)
+                                    {
+                                        bytes_sent = send(atoi(row[1]), objectString, (int)strlen(objectString), 0); /* Send back to client */
+                                        if (bytes_sent < 0)
+                                        {
+                                            perror("\nError: ");
+                                        }
+                                        printf("Send to other client %d with %d byte\n", atoi(row[1]), bytes_sent);
+                                    }
+                                }
+                            }
+                            json_decref(json);
+                            json_decref(root);
+                        }
+                        free(query);
                     }
                     else if (strcmp(keyString, "PUT_RVIE") == 0)
                     {
@@ -525,7 +524,21 @@ void *echo(void *arg)
             }
         }
     }
+    if (userId != 0)
+    {
+        printf("%d\n", userId);
+        sprintf(numStr, "%d", userId);
+        strcpy(tempStr, "UPDATE user SET thread_address = NULL WHERE id=");
+        strcat(tempStr, numStr);
+        strcat(tempStr, ";");
+        printf("%s\n", tempStr);
+        if (mysql_query(connection, tempStr))
+        {
+            fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
+            return 1;
+        }
+    }
+    free(tempStr);
     printf("Client closed connection\n");
-
     close(connfd);
 }

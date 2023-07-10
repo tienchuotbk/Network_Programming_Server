@@ -1,6 +1,7 @@
 Server tra ve:
 1. REQ_LOGI: Yeu cau login
 "REQ_LOGI{\"username\": \"tien\", \"password\": \"1234567\"}"
+REQ_LOGI{"username": "ngoctu", "password": "123456"}
 -> {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"} => Dung tk mk
 {"status": 0} (Mat khau hoac ten dn sai/Ko co)
 2. REQ_REGI
@@ -16,5 +17,12 @@ REQ_REGI{"username": "chuot", "password": "123456"}
 "REQ_LOCA{"locationId": 3}"
 -> 
 {"id": 3, "name": "Lau Phan", "type": 3, "address": "Lau Phan", "comment": [{"name": "Tien Chuot", "content": "Quan an rat ngon, gia ca hop ly"}, {"name": "Nguyen Ngoc Tu", "content": "Quan te, nhan vien phuc vu kem"}]}
+5. PUT_SHLC
+PUT_SHLC{"userId": 2, "userName": "Ngoc Tu", "name": "Mixue", "type": 4, "address": "12 ta quang buu hai ba trung"}
+{"status": 1, "locationId": 6}
+
+6. 
+
+
 
 

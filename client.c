@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #define BUFF_SIZE 1024
 
@@ -24,6 +25,34 @@ int checkValidIp(const char *ip_str)
 	}
 	return 0; // not a valid IP address
 }
+void *receiveMessages(void *arg)
+{
+	int client_sock = *(int *)arg;
+	char buff[BUFF_SIZE + 1];
+	int bytes_received;
+
+	while (1)
+	{
+		memset(buff, '\0', (strlen(buff) + 1));
+
+		bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0); // Get message from server
+
+		if (bytes_received < 0)
+		{
+			perror("Error: ");
+			close(client_sock);
+			pthread_exit(NULL);
+		}
+		buff[bytes_received] = '\0';
+
+		// Display message from server
+		printf("%s\n", "-----------------------------");
+		printf("%s\n", buff);
+		printf("%s\n", "-----------------------------");
+	}
+
+	pthread_exit(NULL);
+}
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +66,7 @@ int main(int argc, char *argv[])
 		printf("%s\n", "Invalid IP Address!");
 		exit(0);
 	}
+	pthread_t receive_thread;
 
 	// TCP
 	int client_sock;
@@ -60,21 +90,27 @@ int main(int argc, char *argv[])
 		printf("\nError!Can not connect to sever! Client exit imediately! ");
 		return 0;
 	}
+	if (pthread_create(&receive_thread, NULL, receiveMessages, &client_sock) != 0)
+	{
+		printf("Error creating receive thread.\n");
+		close(client_sock);
+		return 0;
+	}
 	printf("Enter username:(Press Enter to exit):\n");
 	while (1)
 	{
 		memset(buff, '\0', (strlen(buff) + 1));
 		fgets(buff, BUFF_SIZE, stdin);
 		buff[strlen(buff) - 1] = '\0';
-		if (strlen(buff) == 0)  //Client exit 
+		if (strlen(buff) == 0) // Client exit
 		{
 			printf("Client closed by user\n!");
-			bytes_sent = send(client_sock, "exit", 4, 0); //Send close connection signal to server
+			bytes_sent = send(client_sock, "", 0, 0); // Send close connection signal to server
 			break;
 		}
 		// strcpy(buff, "REQ_LOCA{\"locationId\": 3}");
 
-		bytes_sent = send(client_sock, buff, strlen(buff), 0); //Send message to server
+		bytes_sent = send(client_sock, buff, strlen(buff), 0); // Send message to server
 		if (bytes_sent < 0)
 		{
 			perror("Error: ");
@@ -82,7 +118,9 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 
-		bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0); //Get message from server
+
+
+		bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0); // Get message from server
 		if (bytes_received < 0)
 		{
 			perror("Error: ");
