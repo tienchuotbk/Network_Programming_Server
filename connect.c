@@ -17,7 +17,7 @@ const char *insert_query_1 = "INSERT INTO user (username, name, password, age, p
 const char *insert_query_2 = "INSERT INTO friend (user1, user2) VALUES (1, 2),(2, 1);";
 const char *insert_query_3 = "INSERT INTO locationType (name) VALUES ('School'), ('Coffe'), ('Restaurant'), ('Park'), ('Mall'), ('Market'),('Hospital'),('Others');";
 const char *insert_query_4 = "INSERT INTO location (createdBy, name, type, address) VALUES (1, 'Dai hoc Bach Khoa Ha Noi', 1, '1 Dai Co Viet, Hai Ba Trung, Ha Noi'), (1, 'Gongtea', 2, '23 Vu Trong Phung, Thanh Xuan, Ha Noi'), (2, 'Lau Phan', 3, '15 Pho Hue, Hai Ba Trung, Ha Noi'), (1, 'Dong Xuan', 6, 'Hang Buom, Hoan Kiem, Ha Noi'), (2, 'Bach Mai', 7, '15 Giai Phong, Hai Ba Trung, Ha Noi');";
-const char *insert_query_5 = "INSERT INTO review (createdBy, locationId, content) VALUES (2, 1, 'Rat tuyet voi, sinh vien than thien, canh quan truong rat nhieu cay xanh'), (1, 3, 'Quan an rat ngon, gia ca hop ly');";
+const char *insert_query_5 = "INSERT INTO review (createdBy, locationId, content) VALUES (2, 1, 'Rat tuyet voi, sinh vien than thien, canh quan truong rat nhieu cay xanh'), (1, 3, 'Quan an rat ngon, gia ca hop ly'), (2, 3, 'Quan te, nhan vien phuc vu kem');";
 const char *insert_query_6 = "INSERT INTO saveLocation (locationId, userId) VALUES (2, 1), (5, 1), (3, 2);";
 const char *insert_query_7 = "INSERT INTO favoriteLocation (locationId, userId) VALUES (1, 1),(3, 1),(4, 2);";
 char *getQuerySQL(char *key, char *json_str)
@@ -89,7 +89,7 @@ char *getQuerySQL(char *key, char *json_str)
         // locationId
         locationId = json_integer_value(json_object_get(root, "locationId"));
         strcpy(temp, "");
-        strcat(temp, "SELECT * from location WHERE id = ");
+        strcat(temp, "Select location.id, location.name, location.type, location.address, review.content, user.name from location join review on review.locationId = location.id join user ON review.createdBy= user.id  WHERE location.id =");
         sprintf(numStr, "%d", locationId);
         strcat(temp, numStr);
         strcat(temp, ";");
@@ -213,7 +213,7 @@ char *getQuerySQL(char *key, char *json_str)
     return temp;
 }
 
-MYSQL_RES *updateQuery(MYSQL *connection, char *query)
+MYSQL_RES *selectQuery(MYSQL *connection, char *query)
 {
     MYSQL_RES *resultQuery;
     printf("Hic hu\n");
@@ -230,4 +230,15 @@ MYSQL_RES *updateQuery(MYSQL *connection, char *query)
         mysql_close(connection);
     }
     return resultQuery;
+}
+long updateQuery(MYSQL *connection, char *query){
+    long affected_rows;
+    if (mysql_query(connection, query))
+    {
+        fprintf(stderr, "Failed to execute UPDATE query: %s\n", mysql_error(connection));
+        mysql_close(connection);
+        return 0;
+    }
+    affected_rows = mysql_affected_rows(connection);
+    return affected_rows;
 }

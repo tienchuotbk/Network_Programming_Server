@@ -24,6 +24,7 @@ MYSQL *connection;
 MYSQL_RES *result;
 MYSQL_ROW row;
 char *json_str;
+char *json_str_fail;
 typedef struct Account
 {
     int id;
@@ -259,6 +260,9 @@ void *echo(void *arg)
     connfd = *((int *)arg);
     free(arg);
     pthread_detach(pthread_self());
+    json_t *jsonFaild = json_object();
+    json_object_set_new(jsonFaild, "status", json_integer(0));
+    json_str_fail = json_dumps(jsonFaild, JSON_ENCODE_ANY);
 
     while (1)
     {
@@ -289,7 +293,7 @@ void *echo(void *arg)
                 // Process and send back to client
                 if (strlen(keyString) == 0)
                 {
-                    bytes_sent = send(connfd, query, (int)strlen(query), 0); /* inform the client account not exist */
+                    bytes_sent = send(connfd, "", (int)strlen(query), 0); /* inform the client account not exist */
                     if (bytes_sent < 0)
                     {
                         perror("\nError: ");
@@ -305,14 +309,11 @@ void *echo(void *arg)
                     { // Login account
                         // username and password
                         printf("REQ_LOGI ne\n");
-                        // Query to database
-                        printf("Query databse\n");
                         printf("%s\n", query);
-                        result = updateQuery(connection, query);
+                        result = selectQuery(connection, query);
                         if (result == NULL)
                         {
                             fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
-                            mysql_close(connection);
                         }
                         printf("317\n");
                         // Check if data is present
@@ -320,11 +321,7 @@ void *echo(void *arg)
                         if (num_rows == 0)
                         {
                             // Send wrong password or username to user
-                            json_t *json = json_object();
-                            json_object_set_new(json, "status", json_integer(0));
-                            json_str = json_dumps(json, JSON_ENCODE_ANY);
-
-                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
                             if (bytes_sent < 0)
                             {
                                 perror("\nError: ");
@@ -374,19 +371,49 @@ void *echo(void *arg)
                             }
                             free(tempStr);
                         }
+                        free(query);
                     }
                     else if (strcmp(keyString, "REQ_REGI") == 0)
                     {
+                        printf("Request login\n");
                         // Register account
-                        bytes_sent = send(connfd, query, (int)strlen(query), 0); /* inform the client account not exist */
-                        if (bytes_sent < 0)
+                        long affected_rows = updateQuery(connection, query);
+                        if (affected_rows == 0)
                         {
-                            perror("\nError: ");
+                            printf("No rows were updated\n");
+                            // Send fail to client
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
                         }
                         else
                         {
-                            printf("Send back Oke!\n");
+                            printf("%ld row(s) were updated\n", affected_rows);
+                            long long int insertedId = mysql_insert_id(connection);
+                            printf("Inserted ID: %lld\n", insertedId);
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(1));
+                            json_object_set_new(json, "id", json_integer(insertedId));
+
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
+
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
                         }
+                        free(query);
                     }
                     else if (strcmp(keyString, "REQ_CPAS") == 0)
                     {
@@ -396,6 +423,67 @@ void *echo(void *arg)
                     {
                         // Requets get location infor
                         // locationId
+                        result = selectQuery(connection, query);
+                        if (result == NULL)
+                        {
+                            fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        unsigned long num_rows = mysql_num_rows(result);
+                        if (num_rows == 0)
+                        {
+                            // Send wrong password or username to user
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        else
+                        {
+                            // Process data send to client
+                            json_t *root = json_object();
+                            json_t *array = json_array();
+                            int index = 0;
+                            while ((row = mysql_fetch_row(result)) != NULL)
+                            {
+                                if (index == 0)
+                                {
+                                    json_object_set_new(root, "id", json_integer(atoi(row[0])));
+                                    json_object_set_new(root, "name", json_string(row[1]));
+                                    json_object_set_new(root, "type", json_integer(atoi(row[2])));
+                                    json_object_set_new(root, "address", json_string(row[1]));
+                                }
+                                json_t *object1 = json_object();
+                                json_object_set_new(object1, "name", json_string(row[5]));
+                                json_object_set_new(object1, "content", json_string(row[4]));
+                                json_array_append_new(array, object1);
+                                index++;
+                            }
+                            json_object_set_new(root, "comment", array);
+                            json_str = json_dumps(root, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
                     }
                     else if (strcmp(keyString, "REQ_CDET") == 0)
                     {

@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 			bytes_sent = send(client_sock, "exit", 4, 0); //Send close connection signal to server
 			break;
 		}
-		strcpy(buff, "REQ_LOGI{\"username\": \"tien\", \"password\": \"123456\"}");
+		// strcpy(buff, "REQ_LOCA{\"locationId\": 3}");
 
 		bytes_sent = send(client_sock, buff, strlen(buff), 0); //Send message to server
 		if (bytes_sent < 0)

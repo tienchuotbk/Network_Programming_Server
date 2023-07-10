@@ -1,6 +1,20 @@
 Server tra ve:
-1. REQ_LOGI:
+1. REQ_LOGI: Yeu cau login
 "REQ_LOGI{\"username\": \"tien\", \"password\": \"1234567\"}"
--> {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"} => DUng tk mk
+-> {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"} => Dung tk mk
 {"status": 0} (Mat khau hoac ten dn sai/Ko co)
-2. 
+2. REQ_REGI
+"REQ_REGI{\"username\": \"chuot\", \"password\": \"123456\"}"
+REQ_REGI{"username": "chuot", "password": "123456"}
+-> {"status": 1, "id": 3}
+{"status": 0} (username da su dung)
+3. REQ_CPAS //Request change password
+
+
+4. REQ_LOCA: Request thay thong tin cua Location, bao gom thong tin location va cac comment
+"REQ_LOCA{\"locationId\": 3}"
+"REQ_LOCA{"locationId": 3}"
+-> 
+{"id": 3, "name": "Lau Phan", "type": 3, "address": "Lau Phan", "comment": [{"name": "Tien Chuot", "content": "Quan an rat ngon, gia ca hop ly"}, {"name": "Nguyen Ngoc Tu", "content": "Quan te, nhan vien phuc vu kem"}]}
+
+
