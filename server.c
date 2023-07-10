@@ -497,7 +497,74 @@ void *echo(void *arg)
                     else if (strcmp(keyString, "PUT_RVIE") == 0)
                     {
                         // Push comment
-                        // userId, locationId, content
+                        // userId, name, locationId, content
+                        long affected_rows = updateQuery(connection, query);
+                        if (affected_rows == 0)
+                        {
+                            // Send fail to client
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        else
+                        {
+                            // Send result to client
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(1));
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            json_error_t error;
+                            json_t *root = json_loads(objectString, 0, &error);
+                            if (!root)
+                            {
+                                fprintf(stderr, "JSON parsing error: %s\n", error.text);
+                                return NULL;
+                            }
+                            int id = json_integer_value(json_object_get(root, "userId"));
+                            // Send messgae to all friend client
+                            strcpy(tempStr, "SELECT user2, thread_address from friend join user ON friend.user2 = user.id WHERE user.thread_address IS NOT NULL AND friend.user1 =");
+                            sprintf(numStr, "%d", id);
+                            strcat(tempStr, numStr);
+                            strcat(tempStr, ";");
+                            result = selectQuery(connection, tempStr);
+                            if (result == NULL)
+                            {
+                                fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                                bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                                if (bytes_sent < 0)
+                                {
+                                    perror("\nError: ");
+                                }
+                            }
+                            unsigned long num_rows = mysql_num_rows(result);
+                            if (num_rows > 0)
+                            {
+                                while ((row = mysql_fetch_row(result)) != NULL)
+                                {
+                                    if (strcmp(row[1], "") != 0)
+                                    {
+                                        bytes_sent = send(atoi(row[1]), objectString, (int)strlen(objectString), 0); /* Send back to client */
+                                        if (bytes_sent < 0)
+                                        {
+                                            perror("\nError: ");
+                                        }
+                                        printf("Send to other client %d with %d byte\n", atoi(row[1]), bytes_sent);
+                                    }
+                                }
+                            }
+                            json_decref(json);
+                            json_decref(root);
+                        }
                     }
                     else if (strcmp(keyString, "GET_LOCA") == 0)
                     {

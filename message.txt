@@ -17,11 +17,19 @@ REQ_REGI{"username": "chuot", "password": "123456"}
 "REQ_LOCA{"locationId": 3}"
 -> 
 {"id": 3, "name": "Lau Phan", "type": 3, "address": "Lau Phan", "comment": [{"name": "Tien Chuot", "content": "Quan an rat ngon, gia ca hop ly"}, {"name": "Nguyen Ngoc Tu", "content": "Quan te, nhan vien phuc vu kem"}]}
-5. PUT_SHLC
-PUT_SHLC{"userId": 2, "userName": "Ngoc Tu", "name": "Mixue", "type": 4, "address": "12 ta quang buu hai ba trung"}
+5. PUT_SHLC 
+Type o day la loai thong bao, share dia diem hay la review
+1 la share dia diem, 2 la share review
+PUT_SHLC{"userId": 2, "type": 1, "userName": "Ngoc Tu", "name": "Mixue", "type": 4, "address": "12 ta quang buu hai ba trung"}
 {"status": 1, "locationId": 6}
+-> Thong bao den client khac:
+{"userId": 2, type: 1, "userName": "Ngoc Tu", "name": "Mixue", "type": 4, "address": "12 ta quang buu hai ba trung"}
+6. PUT_RVIE: Gui review (comment)
+userId, locationId, content
+PUT_RVIE{"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "content": "Rat dep"}
+-> {"status": 1}
+-> (Client khac nhan duoc): {"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "content": "Rat dep"}
 
-6. 
 
 
 
