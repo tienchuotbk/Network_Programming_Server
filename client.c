@@ -116,10 +116,11 @@ int main(int argc, char *argv[])
 			perror("Error: ");
 			close(client_sock);
 			return 0;
+		} else {
+			printf("Send %s to server with %d\n", buff, bytes_sent);
 		}
 
-
-
+		printf("Waiting for server...\n");
 		bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0); // Get message from server
 		if (bytes_received < 0)
 		{

@@ -1,6 +1,7 @@
 #include <stdio.h> /* These are the usual header files */
 #include <jansson.h>
 #include <string.h>
+
 #include <mysql/mysql.h>
 const char *db_name = "socket";
 const char *query_create_db = "CREATE DATABASE IF NOT EXISTS socket";
@@ -66,7 +67,7 @@ char *getQuerySQL(char *key, char *json_str)
     }
     else if (strcmp(key, "REQ_CPAS") == 0)
     {
-        // userId, newpassword
+        // userId, oldpassword, newpassword
         userId = json_integer_value(json_object_get(root, "id"));
         password = json_string_value(json_object_get(root, "password"));
         strcpy(temp, "");
@@ -151,22 +152,10 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, string);
         strcat(temp, "');");
     }
-    else if (strcmp(key, "GET_LOCA") == 0)
-    {
-        // Get the location infor
-        // locationId
-        strcpy(temp, "");
-        number = json_integer_value(json_object_get(root, "locationId"));
-        sprintf(numStr, "%d", number);
-        strcat(temp, "SELECT id, name, type, address FROM location WHERE id = ");
-        strcat(temp, numStr);
-        strcat(temp, ";");
-    }
     else if (strcmp(key, "GET_FRIE") == 0)
     {
         // Get list of friend
         // userId
-        // select id, name, age, phone, address  from friend join user on friend.user2 = user.id WHERE friend.user1 = 1;
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);

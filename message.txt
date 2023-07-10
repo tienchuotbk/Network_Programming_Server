@@ -10,9 +10,9 @@ REQ_REGI{"username": "chuot", "password": "123456"}
 -> {"status": 1, "id": 3}
 {"status": 0} (username da su dung)
 3. REQ_CPAS //Request change password
-
-
-4. REQ_LOCA: Request thay thong tin cua Location, bao gom thong tin location va cac comment
+REQ_CPAS{"id":1, "oldpassword": "123456", "newpassword": "1234567"}
+-> {"status": 1}
+4. REQ_LOCA: Request thong tin cua Location, bao gom thong tin location va cac comment
 "REQ_LOCA{\"locationId\": 3}"
 "REQ_LOCA{"locationId": 3}"
 -> 
@@ -29,7 +29,19 @@ userId, locationId, content
 PUT_RVIE{"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "content": "Rat dep"}
 -> {"status": 1}
 -> (Client khac nhan duoc): {"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "content": "Rat dep"}
+7. GET_FRIE
+Get list friend
+GET_FRIE{"userId": 1}
+{"success": 1, "friend": [{"id": 2, "name": "Nguyen Ngoc Tu", "age": 22, "phone": "012345654", "address": "Hai Ba Trung"}, {"id": 3, "name": "Chuot", "age": 23, "phone": "0852250816", "address": "09 Dai CO Viet, Ha Noi"}]}"
 
+8. GET_SLOC
+Get all the save location
+GET_SLOC{"userId":1}
+-> {"success": 1, "saveLocation": [{"id": 2, "name": "Gongtea", "type": 2, "address": "23 Vu Trong Phung, Thanh Xuan, Ha Noi"}, {"id": 5, "name": "Bach Mai", "type": 7, "address": "15 Giai Phong, Hai Ba Trung, Ha Noi"}]}
+9. GET_FLOC
+Get all the favorite location
+GET_FLOC{"userId":1}
+->{"success": 1, "favoriteLocation": [{"id": 1, "name": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}, {"id": 3, "name": "Lau Phan", "type": 3, "address": "15 Pho Hue, Hai Ba Trung, Ha Noi"}]}
 
 
 
