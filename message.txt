@@ -43,6 +43,8 @@ Get all the favorite location
 GET_FLOC{"userId":1}
 ->{"success": 1, "favoriteLocation": [{"id": 1, "name": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}, {"id": 3, "name": "Lau Phan", "type": 3, "address": "15 Pho Hue, Hai Ba Trung, Ha Noi"}]}
 
-
+10. GET_USER
+GET_USER{"userId": 1}
+->response {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"}
 
 

@@ -368,7 +368,9 @@ void *echo(void *arg)
                             {
                                 perror("\nError: ");
                             }
-                        } else {
+                        }
+                        else
+                        {
                             json_t *json = json_object();
                             json_object_set_new(json, "status", json_integer(1));
                             json_str = json_dumps(json, JSON_ENCODE_ANY);
@@ -380,7 +382,6 @@ void *echo(void *arg)
                             }
                             json_decref(json);
                         }
-
                     }
                     else if (strcmp(keyString, "REQ_LOCA") == 0)
                     {
@@ -434,6 +435,8 @@ void *echo(void *arg)
                             {
                                 perror("\nError: ");
                             }
+                            json_decref(root);
+                            json_decref(array);
                         }
                     }
                     else if (strcmp(keyString, "REQ_CDET") == 0)
@@ -604,7 +607,7 @@ void *echo(void *arg)
                             }
                         }
                         unsigned long num_rows = mysql_num_rows(result);
-                        if (num_rows > 0)
+                        if (num_rows >= 0)
                         {
                             json_t *root = json_object();
                             json_t *jsonArray = json_array();
@@ -687,7 +690,7 @@ void *echo(void *arg)
                             }
                         }
                         unsigned long num_rows = mysql_num_rows(result);
-                        if (num_rows > 0)
+                        if (num_rows >= 0)
                         {
                             json_t *root = json_object();
                             json_t *jsonArray = json_array();
@@ -710,6 +713,48 @@ void *echo(void *arg)
                             }
                             free(jsonString);
                             json_decref(jsonArray);
+                            json_decref(root);
+                        }
+                    }
+                    else if (strcmp(keyString, "GET_USER") == 0)
+                    {
+                        printf("Get user infor\n");
+                        result = selectQuery(connection, query);
+                        if (result == NULL)
+                        {
+                            fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                        }
+                        unsigned long num_rows = mysql_num_rows(result);
+                        if (num_rows > 0)
+                        {
+                            json_t *root = json_object();
+                            if (row = mysql_fetch_row(result) != NULL)
+                            {
+                                json_object_set_new(root, "status", json_integer(1));
+                                printf("741\n");
+                                json_object_set_new(root, "id", json_integer(atoi(row[0])));
+                                printf("743\n");
+                                json_object_set_new(root, "name", json_string(row[1]));
+                                printf("745\n");
+                                json_object_set_new(root, "age", json_integer(atoi(row[2])));
+                                printf("747\n");
+                                json_object_set_new(root, "phone", json_string(row[3]));
+                                printf("749\n");
+                                json_object_set_new(root, "address", json_string(row[4]));
+                                printf("van ko loi\n");
+                                char* json_s = json_dumps(root, JSON_ENCODE_ANY);
+                                bytes_sent = send(connfd, json_s, (int)strlen(json_s), 0); /* Send back to client */
+                                if (bytes_sent < 0)
+                                {
+                                    perror("\nError: ");
+                                }
+                                free(json_s);
+                            }
                             json_decref(root);
                         }
                     }

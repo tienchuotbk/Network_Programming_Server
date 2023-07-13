@@ -25,9 +25,9 @@ char *getQuerySQL(char *key, char *json_str)
 {
     printf("%s\n", key);
     printf("%s\n", json_str);
-    char *username;
-    char *password;
-    char *string;
+    char *username = (char *)malloc(150 * sizeof(char));
+    char *password = (char *)malloc(150 * sizeof(char));
+    char *string = (char *)malloc(150 * sizeof(char));
     int userId;
     int locationId;
     int number;
@@ -69,14 +69,19 @@ char *getQuerySQL(char *key, char *json_str)
     {
         // userId, oldpassword, newpassword
         userId = json_integer_value(json_object_get(root, "id"));
-        password = json_string_value(json_object_get(root, "password"));
+        password = json_string_value(json_object_get(root, "newpassword"));
+        string = json_string_value(json_object_get(root, "oldpassword"));
+        printf("Password:%s\n", password);
+        printf("String: %s\n", string);
         strcpy(temp, "");
         strcat(temp, "UPDATE user SET password = '");
         strcat(temp, password);
         strcat(temp, "' WHERE id= ");
         sprintf(numStr, "%d", userId);
         strcat(temp, numStr);
-        strcat(temp, ";");
+        strcat(temp, " AND password='");
+        strcat(temp, string);
+        strcat(temp, "';");
     }
     else if (strcmp(key, "REQ_LOCA") == 0)
     {
@@ -185,12 +190,25 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, numStr);
         strcat(temp, ";");
     }
+    else if(strcmp(key, "GET_USER") == 0){
+        strcpy(temp, "");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, "SELECT id, name, age, phone, address FROM user WHERE id = ");
+        strcat(temp, numStr);
+        strcat(temp, ";");
+    }
     else
     {
         printf("Not messeage type detected!\n");
     }
 
+    free(string);
+    free(password);
+    free(username);
+
     printf("Temp=%s\n", temp);
+    printf("Het ham connect\n");
     // free(temp);
     return temp;
 }
@@ -198,7 +216,8 @@ char *getQuerySQL(char *key, char *json_str)
 MYSQL_RES *selectQuery(MYSQL *connection, char *query)
 {
     MYSQL_RES *resultQuery;
-    printf("Hic hu\n");
+    printf("Select query function:\n");
+    printf("%s\n", query);
     if (mysql_query(connection, query))
     {
         fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
