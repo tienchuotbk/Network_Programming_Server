@@ -44,7 +44,14 @@ GET_FLOC{"userId":1}
 ->{"success": 1, "favoriteLocation": [{"id": 1, "name": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}, {"id": 3, "name": "Lau Phan", "type": 3, "address": "15 Pho Hue, Hai Ba Trung, Ha Noi"}]}
 
 10. GET_USER
+Lay thong tin cua 1 nguoi dung
 GET_USER{"userId": 1}
 ->response {"status": 1, "id": 1, "name": "Tien Chuot", "age": "23", "phone": "0852250815", "address": "1 Dai CO Viet, Ha Noi"}
+{"success": 1, "id": 2, "name": "Nguyen Ngoc Tu", "age": 22, "phone": "012345654", "address": "Hai Ba Trung"}
 
+11. FIND_LOC (Tim theo ten Location va theo Type, neu vaule query = "" rong thi query all), type = 0 la All type.
+FIND_LOC{"userId":2,  "type": 0, "value": "bach khoa"}
+Request search Location
+-> {"success": 1, "location": [{"locationId": 1, "userId": 1, "userName": "Tien Chuot", "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}]}
+-> (Rong): {"success": 1, "location": []}
 

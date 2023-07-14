@@ -31,7 +31,7 @@ char *getQuerySQL(char *key, char *json_str)
     int userId;
     int locationId;
     int number;
-    char *temp = malloc(sizeof(char) * 250);
+    char *temp = malloc(sizeof(char) * 255);
     json_error_t error;
     json_t *root = json_loads(json_str, 0, &error);
     if (!root)
@@ -196,6 +196,26 @@ char *getQuerySQL(char *key, char *json_str)
         sprintf(numStr, "%d", userId);
         strcat(temp, "SELECT id, name, age, phone, address FROM user WHERE id = ");
         strcat(temp, numStr);
+        strcat(temp, ";");
+    }
+    else if(strcmp(key, "FIND_LOC") == 0){
+        // SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> 2 AND l.name LIKE '%bach khoa%';
+        strcpy(temp, "SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> ");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, numStr);
+        string = json_string_value(json_object_get(root, "value"));
+        if(strlen(string) != 0){
+            strcat(temp, " AND l.name LIKE '%");
+            strcat(temp, string);
+            strcat(temp, "%'");
+        }
+        userId = json_integer_value(json_object_get(root, "type"));
+        if(userId != 0){
+            strcat(temp, " AND l.type =");
+            sprintf(numStr, "%d", userId);
+            strcat(temp, numStr);
+        }
         strcat(temp, ";");
     }
     else

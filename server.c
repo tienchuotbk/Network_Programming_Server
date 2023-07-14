@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
     pthread_t tid;
 
     MYSQL_RES *result;
-    MYSQL_ROW row;
     // const char *query_create_table2 = "CREATE TABLE user (id INT PRIMARY KEY AUTO_INCREMENT, thread_address varchar(255), password varchar(55), name varchar(50), age int,phone varchar(25),address varchar(255));";
 
     // Initialize MySQL connection
@@ -185,16 +184,13 @@ void *echo(void *arg)
 {
     int connfd;
     int userId = 0;
-    char temp[BUFF_SIZE];
-    int split_result;
     int bytes_sent, bytes_received;
     char buff[BUFF_SIZE + 1];
     char *keyString;
     char *objectString;
-    int keyNumber;
     char *query;
-    char *tempStr = (char *)malloc(150 * sizeof(char));
-    char numStr[15];
+    char *tempStr = (char *)malloc(200 * sizeof(char));
+    char numStr[25];
 
     connfd = *((int *)arg);
     free(arg);
@@ -311,6 +307,7 @@ void *echo(void *arg)
                             {
                                 printf("Send back Oke!\n");
                             }
+                            json_decref(json);
                         }
                     }
                     else if (strcmp(keyString, "REQ_REGI") == 0)
@@ -729,32 +726,72 @@ void *echo(void *arg)
                                 perror("\nError: ");
                             }
                         }
+                        else
+                        {
+                            unsigned long num_rows = mysql_num_rows(result);
+                            if (num_rows > 0)
+                            {
+                                printf("Numrow=%d\n", (int)num_rows);
+                                while ((row = mysql_fetch_row(result)) != NULL)
+                                {
+                                    json_t *userObj = json_object();
+                                    json_object_set_new(userObj, "success", json_integer(1));
+                                    json_object_set_new(userObj, "id", json_integer(atoi(row[0])));
+                                    json_object_set_new(userObj, "name", json_string(row[1]));
+                                    json_object_set_new(userObj, "age", json_integer(atoi(row[2])));
+                                    json_object_set_new(userObj, "phone", json_string(row[3]));
+                                    json_object_set_new(userObj, "address", json_string(row[4]));
+                                    char *json_s = json_dumps(userObj, JSON_ENCODE_ANY);
+                                    bytes_sent = send(connfd, json_s, (int)strlen(json_s), 0); /* Send back to client */
+                                    if (bytes_sent < 0)
+                                    {
+                                        perror("\nError: ");
+                                    }
+                                    free(json_s);
+                                    json_decref(userObj);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (strcmp(keyString, "FIND_LOC") == 0)
+                    {
+                        result = selectQuery(connection, query);
+                        if (result == NULL)
+                        {
+                            fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                        }
                         unsigned long num_rows = mysql_num_rows(result);
-                        if (num_rows > 0)
+                        if (num_rows >= 0)
                         {
                             json_t *root = json_object();
-                            if (row = mysql_fetch_row(result) != NULL)
+                            json_t *jsonArray = json_array();
+                            json_object_set_new(root, "success", json_integer(1));
+                            while ((row = mysql_fetch_row(result)) != NULL)
                             {
-                                json_object_set_new(root, "status", json_integer(1));
-                                printf("741\n");
-                                json_object_set_new(root, "id", json_integer(atoi(row[0])));
-                                printf("743\n");
-                                json_object_set_new(root, "name", json_string(row[1]));
-                                printf("745\n");
-                                json_object_set_new(root, "age", json_integer(atoi(row[2])));
-                                printf("747\n");
-                                json_object_set_new(root, "phone", json_string(row[3]));
-                                printf("749\n");
-                                json_object_set_new(root, "address", json_string(row[4]));
-                                printf("van ko loi\n");
-                                char* json_s = json_dumps(root, JSON_ENCODE_ANY);
-                                bytes_sent = send(connfd, json_s, (int)strlen(json_s), 0); /* Send back to client */
-                                if (bytes_sent < 0)
-                                {
-                                    perror("\nError: ");
-                                }
-                                free(json_s);
+                                json_t *userObj = json_object();
+                                json_object_set_new(userObj, "locationId", json_integer(atoi(row[0])));
+                                json_object_set_new(userObj, "userId", json_integer(atoi(row[1])));
+                                json_object_set_new(userObj, "userName", json_string(row[2]));
+                                json_object_set_new(userObj, "locationName", json_string(row[3]));
+                                json_object_set_new(userObj, "type", json_integer(atoi(row[4])));
+                                json_object_set_new(userObj, "address", json_string(row[5]));
+                                json_array_append_new(jsonArray, userObj);
                             }
+                            json_object_set_new(root, "location", jsonArray);
+                            char *jsonString = json_dumps(root, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, jsonString, (int)strlen(jsonString), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            free(jsonString);
+                            json_decref(jsonArray);
                             json_decref(root);
                         }
                     }
@@ -773,7 +810,6 @@ void *echo(void *arg)
         if (mysql_query(connection, tempStr))
         {
             fprintf(stderr, "Failed to execute SELECT query: %s\n", mysql_error(connection));
-            return 1;
         }
     }
     free(query);
