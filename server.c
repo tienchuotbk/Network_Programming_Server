@@ -962,6 +962,34 @@ void *echo(void *arg)
                             }
                             json_decref(json);
                         }
+                    } else if(strcmp(keyString, "REQ_ADDF") == 0 || strcmp(keyString, "REQ_ADDS") == 0){
+                        long affected_rows = updateQuery(connection, query);
+                        if (affected_rows == 0)
+                        {
+                            printf("No rows were updated\n");
+                            // Send fail to client
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            else
+                            {
+                                printf("Send back Oke!\n");
+                            }
+                        }
+                        else
+                        {
+                            json_t *json = json_object();
+                            json_object_set_new(json, "status", json_integer(1));
+                            json_str = json_dumps(json, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            json_decref(json);
+                        }
                     }
                 }
             }

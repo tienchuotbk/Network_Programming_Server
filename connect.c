@@ -288,6 +288,26 @@ char *getQuerySQL(char *key, char *json_str)
         sprintf(numStr, "%d", userId);
         strcat(temp, numStr);
         strcat(temp, ";");
+    } else if(strcmp(key, "REQ_ADDF") == 0){
+        strcpy(temp, "INSERT INTO favoriteLocation(userId, locationId) VALUE (");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, numStr);
+        strcat(temp, ", ");
+        number = json_integer_value(json_object_get(root, "locationId"));
+        sprintf(numStr, "%d", number);
+        strcat(temp, numStr);
+        strcat(temp, ");");
+    } else if(strcmp(key, "REQ_ADDS") == 0){
+        strcpy(temp, "INSERT INTO saveLocation(userId, locationId) VALUE (");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, numStr);
+        strcat(temp, ", ");
+        number = json_integer_value(json_object_get(root, "locationId"));
+        sprintf(numStr, "%d", number);
+        strcat(temp, numStr);
+        strcat(temp, ");");
     }
     else
     {

@@ -78,6 +78,16 @@ REQ_CINF{"userId": 1, "name": "Tien Chuot", "age": 25, "phone": "0816553223", "a
 17. GET_RECO
 Get location recommend
 
+....
+
+18. REQ_ADDF
+Add favorite location
+REQ_ADDF{"userId": 1, "locationId": 4}
+
+
+19. REQ_ADDS
+Add saved location
+REQ_ADDS{"userId": 2, "locationId": 5}
 
 
 
