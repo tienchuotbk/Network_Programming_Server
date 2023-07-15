@@ -863,7 +863,7 @@ void *echo(void *arg)
                                 json_object_set_new(userObj, "locationId", json_integer(atoi(row[2])));
                                 json_object_set_new(userObj, "locationName", json_string(row[3]));
                                 json_object_set_new(userObj, "type", json_integer(atoi(row[4])));
-                                json_object_set_new(userObj, "locationAdd", json_string(row[5]));
+                                json_object_set_new(userObj, "address", json_string(row[5]));
                                 json_array_append_new(jsonArray, userObj);
                             }
                             json_object_set_new(root, "locationShare", jsonArray);

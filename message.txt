@@ -57,7 +57,7 @@ Request search Location
 12. GET_FEED
 GET_FEED{"userId": 1}
 _> {"success": 1, "locationShare": [...]}
--> {"success": 1, "locationShare": [{"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 5, "locationName": "Bach Mai", "type": 7, "locationAdd": "15 Giai Phong, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 4, "locationName": "Dong Xuan", "type": 6, "locationAdd": "Hang Buom, Hoan Kiem, Ha Noi"}, {"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 3, "locationName": "Lau Phan", "type": 3, "locationAdd": "15 Pho Hue, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 2, "locationName": "Gongtea", "type": 2, "locationAdd": "23 Vu Trong Phung, Thanh Xuan, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 1, "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "locationAdd": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}]}
+-> {"success": 1, "locationShare": [{"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 5, "locationName": "Bach Mai", "type": 7, "address": "15 Giai Phong, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 4, "locationName": "Dong Xuan", "type": 6, "locationAdd": "Hang Buom, Hoan Kiem, Ha Noi"}, {"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 3, "locationName": "Lau Phan", "type": 3, "locationAdd": "15 Pho Hue, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 2, "locationName": "Gongtea", "type": 2, "locationAdd": "23 Vu Trong Phung, Thanh Xuan, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 1, "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "locationAdd": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}]}
 
 13. REQ_FOLW: 
 // Request add friend, follow
