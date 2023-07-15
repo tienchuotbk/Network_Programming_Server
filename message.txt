@@ -29,7 +29,7 @@ PUT_RVIE{"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "conte
 -> {"status": 1}
 -> (Client khac nhan duoc): {"userId": 1, "type": 2, "userName": "Van Tien", "locationId": 4, "content": "Rat dep"}
 7. GET_FRIE
-Get list friend
+Get list friend(f)
 GET_FRIE{"userId": 1}
 {"success": 1, "friend": [{"id": 2, "name": "Nguyen Ngoc Tu", "age": 22, "phone": "012345654", "address": "Hai Ba Trung"}, {"id": 3, "name": "Chuot", "age": 23, "phone": "0852250816", "address": "09 Dai CO Viet, Ha Noi"}]}"
 
@@ -58,3 +58,29 @@ Request search Location
 GET_FEED{"userId": 1}
 _> {"success": 1, "locationShare": [...]}
 -> {"success": 1, "locationShare": [{"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 5, "locationName": "Bach Mai", "type": 7, "locationAdd": "15 Giai Phong, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 4, "locationName": "Dong Xuan", "type": 6, "locationAdd": "Hang Buom, Hoan Kiem, Ha Noi"}, {"userId": 2, "userName": "Nguyen Ngoc Tu", "locationId": 3, "locationName": "Lau Phan", "type": 3, "locationAdd": "15 Pho Hue, Hai Ba Trung, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 2, "locationName": "Gongtea", "type": 2, "locationAdd": "23 Vu Trong Phung, Thanh Xuan, Ha Noi"}, {"userId": 1, "userName": "Tien Chuot", "locationId": 1, "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "locationAdd": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}]}
+
+13. REQ_FOLW: 
+// Request add friend, follow
+REQ_FOLW{"userId": 1, "friendId": 3}
+-> {"success": 1}
+14. REQ_UNFL
+Unfollow user
+REQ_UNFL{"userId": 1, "friendId": 3}
+-> {"success": 1}
+15. GET_STRG
+Lay list thong tin ng la (chua follow)
+{"success": 1, "stranger": [{"id": 3, "name": "Nguyen Duc Phuc", "age": 25, "phone": "0123895654", "address": "Sai Gon"}]}
+-> {"success": 1}
+16. REQ_CINF
+Request change the user infor
+REQ_CINF{"userId": 1, "name": "Tien Chuot", "age": 25, "phone": "0816553223", "address": "895 Minh Khai"}
+-> {"status": 1}
+17. GET_RECO
+Get location recommend
+
+
+
+
+
+
+

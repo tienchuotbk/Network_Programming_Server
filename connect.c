@@ -14,7 +14,7 @@ const char *query_create_table_4 = "CREATE TABLE location (id int PRIMARY KEY AU
 const char *query_create_table_5 = "CREATE TABLE review (id int PRIMARY KEY AUTO_INCREMENT,createdBy int,locationId int,content varchar(1000),FOREIGN KEY (createdBy) REFERENCES user(id),FOREIGN KEY (locationId) REFERENCES location(id));";
 const char *query_create_table_6 = "CREATE TABLE saveLocation (id int PRIMARY KEY AUTO_INCREMENT, locationId int, userId int, FOREIGN KEY (userId) REFERENCES user(id), FOREIGN KEY (locationId) REFERENCES location(id));";
 const char *query_create_table_7 = "CREATE TABLE favoriteLocation (id int PRIMARY KEY AUTO_INCREMENT,locationId int,userId int,FOREIGN KEY (userId) REFERENCES user(id),FOREIGN KEY (locationId) REFERENCES location(id));";
-const char *insert_query_1 = "INSERT INTO user (username, name, password, age, phone, address) VALUES ('tien','Tien Chuot', '123456', 23, '0852250815', '1 Dai CO Viet, Ha Noi'), ('ngoctu','Nguyen Ngoc Tu', '123456', 22,  '012345654', 'Hai Ba Trung');";
+const char *insert_query_1 = "INSERT INTO user (username, name, password, age, phone, address) VALUES ('tien','Tien Chuot', '123456', 23, '0852250815', '1 Dai CO Viet, Ha Noi'), ('ngoctu','Nguyen Ngoc Tu', '123456', 22,  '012345654', 'Hai Ba Trung'), ('ducphuc','Nguyen Duc Phuc', '123456', 25,  '0123895654', 'Sai Gon');";
 const char *insert_query_2 = "INSERT INTO friend (user1, user2) VALUES (1, 2),(2, 1);";
 const char *insert_query_3 = "INSERT INTO locationType (name) VALUES ('School'), ('Coffe'), ('Restaurant'), ('Park'), ('Mall'), ('Market'),('Hospital'),('Others');";
 const char *insert_query_4 = "INSERT INTO location (createdBy, name, type, address) VALUES (1, 'Dai hoc Bach Khoa Ha Noi', 1, '1 Dai Co Viet, Hai Ba Trung, Ha Noi'), (1, 'Gongtea', 2, '23 Vu Trong Phung, Thanh Xuan, Ha Noi'), (2, 'Lau Phan', 3, '15 Pho Hue, Hai Ba Trung, Ha Noi'), (1, 'Dong Xuan', 6, 'Hang Buom, Hoan Kiem, Ha Noi'), (2, 'Bach Mai', 7, '15 Giai Phong, Hai Ba Trung, Ha Noi');";
@@ -40,6 +40,7 @@ char *getQuerySQL(char *key, char *json_str)
         return NULL;
     }
     char numStr[10];
+    char numStr2[10];
     if (strcmp(key, "REQ_LOGI") == 0)
     { // Login account
         // username and password
@@ -169,6 +170,15 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, "SELECT id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, ";");
+    } else if(strcmp(key, "GET_STRG") == 0){
+        strcpy(temp, "");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);1;
+        strcat(temp, "SELECT id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
+        strcat(temp, numStr);
+        strcat(temp, " and user.id <> ");
+        strcat(temp, numStr);
+        strcat(temp, ";");
     }
     else if (strcmp(key, "GET_SLOC") == 0)
     {
@@ -229,6 +239,55 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, ") OR createdBy = ");
         strcat(temp, numStr);
         strcat(temp, " ORDER BY l.id DESC;");
+    } else if(strcmp(key, "REQ_FOLW")== 0){
+        strcpy(temp, "");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        number = json_integer_value(json_object_get(root, "friendId"));
+        sprintf(numStr2, "%d", number);
+        strcat(temp, "INSERT INTO friend(user1, user2) VALUE (");
+        strcat(temp, numStr);
+        strcat(temp, ",");
+        strcat(temp, numStr2);
+        strcat(temp, "), (");
+        strcat(temp, numStr2);
+        strcat(temp, ",");
+        strcat(temp, numStr);
+        strcat(temp, ");");
+    } else if(strcmp(key, "REQ_UNFL")== 0){
+        strcpy(temp, "");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        number = json_integer_value(json_object_get(root, "friendId"));
+        sprintf(numStr2, "%d", number);
+        strcat(temp, "DELETE FROM friend WHERE (user1 =");
+        strcat(temp, numStr);
+        strcat(temp, " AND user2 =");
+        strcat(temp, numStr2);
+        strcat(temp, ") OR (user1 =");
+        strcat(temp, numStr2);
+        strcat(temp, " AND user2 =");
+        strcat(temp, numStr);
+        strcat(temp, ");");
+    } else if(strcmp(key, "REQ_CINF") == 0){
+        strcpy(temp, "UPDATE user SET name ='");
+        string = json_string_value(json_object_get(root, "name"));
+        strcat(temp, string);
+        strcat(temp, "', age =");
+        number = json_integer_value(json_object_get(root, "age"));
+        sprintf(numStr, "%d", number);
+        strcat(temp, numStr);
+        strcat(temp, ", phone ='");
+        string = json_string_value(json_object_get(root, "phone"));
+        strcat(temp, string);
+        strcat(temp, "', address ='");
+        string = json_string_value(json_object_get(root, "address"));
+        strcat(temp, string);
+        strcat(temp, "' WHERE id= ");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, numStr);
+        strcat(temp, ";");
     }
     else
     {
