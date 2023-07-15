@@ -14,9 +14,8 @@ REQ_CPAS{"id":1, "oldpassword": "123456", "newpassword": "1234567"}
 -> {"status": 1}
 4. REQ_LOCA: Request thong tin cua Location, bao gom thong tin location va cac comment
 "REQ_LOCA{\"locationId\": 3}"
-"REQ_LOCA{"locationId": 3}"
--> 
-{"id": 3, "name": "Lau Phan", "type": 3, "address": "Lau Phan", "comment": [{"name": "Tien Chuot", "content": "Quan an rat ngon, gia ca hop ly"}, {"name": "Nguyen Ngoc Tu", "content": "Quan te, nhan vien phuc vu kem"}]}
+REQ_LOCA{"locationId": 1}
+-> {"id": 1, "createdUserId": 1, "createdUserName": "Tien Chuot", "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi", "comment": [{"id": 2, "name": "Nguyen Ngoc Tu", "content": "Rat tuyet voi, sinh vien than thien, canh quan truong rat nhieu cay xanh"}, {"id": 2, "name": "Nguyen Ngoc Tu", "content": "Rat oke nhe"}]}
 5. PUT_SHLC 
 Type o day la loai thong bao, share dia diem hay la review
 1 la share dia diem, 2 la share review
@@ -50,7 +49,7 @@ GET_USER{"userId": 1}
 {"success": 1, "id": 2, "name": "Nguyen Ngoc Tu", "age": 22, "phone": "012345654", "address": "Hai Ba Trung"}
 
 11. FIND_LOC (Tim theo ten Location va theo Type, neu vaule query = "" rong thi query all), type = 0 la All type.
-FIND_LOC{"userId":2,  "type": 0, "value": "bach khoa"}
+FIND_LOC{"userId":2,  "type": 0, "value": "blocationSharedach khoa"}
 Request search Location
 -> {"success": 1, "location": [{"locationId": 1, "userId": 1, "userName": "Tien Chuot", "locationName": "Dai hoc Bach Khoa Ha Noi", "type": 1, "address": "1 Dai Co Viet, Hai Ba Trung, Ha Noi"}]}
 -> (Rong): {"success": 1, "location": []}

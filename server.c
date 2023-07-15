@@ -415,13 +415,17 @@ void *echo(void *arg)
                                 if (index == 0)
                                 {
                                     json_object_set_new(root, "id", json_integer(atoi(row[0])));
-                                    json_object_set_new(root, "name", json_string(row[1]));
-                                    json_object_set_new(root, "type", json_integer(atoi(row[2])));
-                                    json_object_set_new(root, "address", json_string(row[1]));
+                                    json_object_set_new(root, "createdUserId", json_integer(atoi(row[1])));
+
+                                    json_object_set_new(root, "createdUserName", json_string(row[2]));
+                                    json_object_set_new(root, "locationName", json_string(row[3]));
+                                    json_object_set_new(root, "type", json_integer(atoi(row[4])));
+                                    json_object_set_new(root, "address", json_string(row[5]));
                                 }
                                 json_t *object1 = json_object();
-                                json_object_set_new(object1, "name", json_string(row[5]));
-                                json_object_set_new(object1, "content", json_string(row[4]));
+                                json_object_set_new(object1, "id", json_integer(atoi(row[6])));
+                                json_object_set_new(object1, "name", json_string(row[7]));
+                                json_object_set_new(object1, "content", json_string(row[8]));
                                 json_array_append_new(array, object1);
                                 index++;
                             }
