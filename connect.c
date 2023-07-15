@@ -31,7 +31,7 @@ char *getQuerySQL(char *key, char *json_str)
     int userId;
     int locationId;
     int number;
-    char *temp = malloc(sizeof(char) * 255);
+    char *temp = malloc(sizeof(char) * 300);
     json_error_t error;
     json_t *root = json_loads(json_str, 0, &error);
     if (!root)
@@ -217,6 +217,16 @@ char *getQuerySQL(char *key, char *json_str)
             strcat(temp, numStr);
         }
         strcat(temp, ";");
+    } else if (strcmp(key, "GET_FEED") == 0) {
+        strcpy(temp, "");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, "SELECT u.id as userId, u.name as userName, l.id as locationId, l.name as locationName, l.type, l.address as locationAdd  from location as l join user as u on l.createdBy=u.id WHERE l.createdBy in (SELECT user2 from friend WHERE user1= ");
+//  1) OR createdBy = 1;");
+        strcat(temp, numStr);
+        strcat(temp, ") OR createdBy = ");
+        strcat(temp, numStr);
+        strcat(temp, " ORDER BY l.id DESC;");
     }
     else
     {
