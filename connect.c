@@ -10,14 +10,14 @@ const char *query_use_db = "USE socket";
 const char *query_create_table_1 = "CREATE TABLE user (id int PRIMARY KEY AUTO_INCREMENT, username varchar(255) UNIQUE,thread_address varchar(255), password varchar(55), name varchar(50), age int,phone varchar(25), address varchar(255) );";
 const char *query_create_table_2 = "CREATE TABLE friend (user1 INT, user2 INT, FOREIGN KEY (user1) REFERENCES user(id), FOREIGN KEY (user2) REFERENCES user(id));";
 const char *query_create_table_3 = "CREATE TABLE locationType (id int PRIMARY KEY AUTO_INCREMENT, name varchar(125));";
-const char *query_create_table_4 = "CREATE TABLE location (id int PRIMARY KEY AUTO_INCREMENT,createdBy int, name varchar(255), type int, address varchar(255), FOREIGN KEY (createdBy) REFERENCES user(id), FOREIGN KEY (type) REFERENCES locationType(id));";
+const char *query_create_table_4 = "CREATE TABLE location (id int PRIMARY KEY AUTO_INCREMENT,createdBy int, name varchar(255), type int, address varchar(255), view int DEFAULT 0, FOREIGN KEY (createdBy) REFERENCES user(id), FOREIGN KEY (type) REFERENCES locationType(id));";
 const char *query_create_table_5 = "CREATE TABLE review (id int PRIMARY KEY AUTO_INCREMENT,createdBy int,locationId int,content varchar(1000),FOREIGN KEY (createdBy) REFERENCES user(id),FOREIGN KEY (locationId) REFERENCES location(id));";
 const char *query_create_table_6 = "CREATE TABLE saveLocation (id int PRIMARY KEY AUTO_INCREMENT, locationId int, userId int, FOREIGN KEY (userId) REFERENCES user(id), FOREIGN KEY (locationId) REFERENCES location(id));";
 const char *query_create_table_7 = "CREATE TABLE favoriteLocation (id int PRIMARY KEY AUTO_INCREMENT,locationId int,userId int,FOREIGN KEY (userId) REFERENCES user(id),FOREIGN KEY (locationId) REFERENCES location(id));";
 const char *insert_query_1 = "INSERT INTO user (username, name, password, age, phone, address) VALUES ('tien','Tien Chuot', '123456', 23, '0852250815', '1 Dai CO Viet, Ha Noi'), ('ngoctu','Nguyen Ngoc Tu', '123456', 22,  '012345654', 'Hai Ba Trung'), ('ducphuc','Nguyen Duc Phuc', '123456', 25,  '0123895654', 'Sai Gon');";
 const char *insert_query_2 = "INSERT INTO friend (user1, user2) VALUES (1, 2),(2, 1);";
 const char *insert_query_3 = "INSERT INTO locationType (name) VALUES ('School'), ('Coffe'), ('Restaurant'), ('Park'), ('Mall'), ('Market'),('Hospital'),('Others');";
-const char *insert_query_4 = "INSERT INTO location (createdBy, name, type, address) VALUES (1, 'Dai hoc Bach Khoa Ha Noi', 1, '1 Dai Co Viet, Hai Ba Trung, Ha Noi'), (1, 'Gongtea', 2, '23 Vu Trong Phung, Thanh Xuan, Ha Noi'), (2, 'Lau Phan', 3, '15 Pho Hue, Hai Ba Trung, Ha Noi'), (1, 'Dong Xuan', 6, 'Hang Buom, Hoan Kiem, Ha Noi'), (2, 'Bach Mai', 7, '15 Giai Phong, Hai Ba Trung, Ha Noi');";
+const char *insert_query_4 = "INSERT INTO location (createdBy, name, type, address, view) VALUES (1, 'Dai hoc Bach Khoa Ha Noi', 1, '1 Dai Co Viet, Hai Ba Trung, Ha Noi', 2), (1, 'Gongtea', 2, '23 Vu Trong Phung, Thanh Xuan, Ha Noi', 1), (2, 'Lau Phan', 3, '15 Pho Hue, Hai Ba Trung, Ha Noi', 1), (1, 'Dong Xuan', 6, 'Hang Buom, Hoan Kiem, Ha Noi', 6), (2, 'Bach Mai', 7, '15 Giai Phong, Hai Ba Trung, Ha Noi', 4);";
 const char *insert_query_5 = "INSERT INTO review (createdBy, locationId, content) VALUES (2, 1, 'Rat tuyet voi, sinh vien than thien, canh quan truong rat nhieu cay xanh'), (1, 3, 'Quan an rat ngon, gia ca hop ly'), (2, 3, 'Quan te, nhan vien phuc vu kem'), (2, 1, 'Rat oke nhe');";
 const char *insert_query_6 = "INSERT INTO saveLocation (locationId, userId) VALUES (2, 1), (5, 1), (3, 2);";
 const char *insert_query_7 = "INSERT INTO favoriteLocation (locationId, userId) VALUES (1, 1),(3, 1),(4, 2);";
@@ -212,10 +212,7 @@ char *getQuerySQL(char *key, char *json_str)
     }
     else if(strcmp(key, "FIND_LOC") == 0){
         // SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> 2 AND l.name LIKE '%bach khoa%';
-        strcpy(temp, "SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> ");
-        userId = json_integer_value(json_object_get(root, "userId"));
-        sprintf(numStr, "%d", userId);
-        strcat(temp, numStr);
+        strcpy(temp, "SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> 0");
         string = json_string_value(json_object_get(root, "value"));
         if(strlen(string) != 0){
             strcat(temp, " AND l.name LIKE '%");

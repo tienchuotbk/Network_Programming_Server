@@ -13,7 +13,7 @@
 #include "connect.c"
 #include <jansson.h>
 
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 2048
 #define MAX_USERNAME_LENGTH 25
 #define MAX_PASSWORD_LENGTH 25
 #define BACKLOG 20 /* Number of allowed connections */
