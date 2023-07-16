@@ -167,14 +167,14 @@ char *getQuerySQL(char *key, char *json_str)
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
-        strcat(temp, "SELECT DISTINCE id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
+        strcat(temp, "SELECT DISTINCT id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, ";");
     } else if(strcmp(key, "GET_STRG") == 0){
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);1;
-        strcat(temp, "SELECT DISTINCE id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
+        strcat(temp, "SELECT DISTINCT id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, " and user.id <> ");
         strcat(temp, numStr);
