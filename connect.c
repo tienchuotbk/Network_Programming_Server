@@ -167,14 +167,14 @@ char *getQuerySQL(char *key, char *json_str)
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
-        strcat(temp, "SELECT id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
+        strcat(temp, "SELECT DISTINCE id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, ";");
     } else if(strcmp(key, "GET_STRG") == 0){
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);1;
-        strcat(temp, "SELECT id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
+        strcat(temp, "SELECT DISTINCE id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
         strcat(temp, numStr);
         strcat(temp, " and user.id <> ");
         strcat(temp, numStr);
@@ -187,7 +187,7 @@ char *getQuerySQL(char *key, char *json_str)
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
-        strcat(temp, "SELECT location.id, name, type, address FROM location JOIN saveLocation ON location.id  = saveLocation.locationId WHERE saveLocation.userId = ");
+        strcat(temp, "SELECT DISTINCT location.id, name, type, address FROM location JOIN saveLocation ON location.id  = saveLocation.locationId WHERE saveLocation.userId = ");
         strcat(temp, numStr);
         strcat(temp, ";");
     }
@@ -198,7 +198,7 @@ char *getQuerySQL(char *key, char *json_str)
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);
-        strcat(temp, "SELECT location.id, name, type, address FROM location JOIN favoriteLocation ON location.id  = favoriteLocation.locationId WHERE favoriteLocation.userId = ");
+        strcat(temp, "SELECT DISTINCT location.id, name, type, address FROM location JOIN favoriteLocation ON location.id  = favoriteLocation.locationId WHERE favoriteLocation.userId = ");
         strcat(temp, numStr);
         strcat(temp, ";");
     }
@@ -235,7 +235,7 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, numStr);
         strcat(temp, ") OR createdBy = ");
         strcat(temp, numStr);
-        strcat(temp, " ORDER BY l.id DESC;");
+        strcat(temp, " ORDER BY l.id DESC LIMIT 5;");
     } else if(strcmp(key, "REQ_FOLW")== 0){
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
@@ -305,6 +305,13 @@ char *getQuerySQL(char *key, char *json_str)
         sprintf(numStr, "%d", number);
         strcat(temp, numStr);
         strcat(temp, ");");
+    } else if(strcmp(key, "GET_RECO") == 0){
+        // SELECT id, name, type, address FROM location WHERE createdBy <> 1 ORDER BY view DESC LIMIT 5;
+        strcpy(temp, "SELECT id, name, type, address FROM location WHERE createdBy <> ");
+        userId = json_integer_value(json_object_get(root, "userId"));
+        sprintf(numStr, "%d", userId);
+        strcat(temp, numStr);
+        strcat(temp, " ORDER BY view DESC LIMIT 5;");
     }
     else
     {

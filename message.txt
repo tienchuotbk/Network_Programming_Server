@@ -77,19 +77,19 @@ REQ_CINF{"userId": 1, "name": "Tien Chuot", "age": 25, "phone": "0816553223", "a
 -> {"status": 1}
 17. GET_RECO
 Get location recommend
-GET_REC{"userId": 1}
-
+GET_RECO{"userId": 1}
+-> {"success": 1, "location": [{"id": 5, "name": "Bach Mai", "type": 7, "address": "15 Giai Phong, Hai Ba Trung, Ha Noi"}, {"id": 3, "name": "Lau Phan", "type": 3, "address": "15 Pho Hue, Hai Ba Trung, Ha Noi"}]}
 ....
 
 18. REQ_ADDF
 Add favorite location
 REQ_ADDF{"userId": 1, "locationId": 4}
-
+-> {"success": 1}
 
 19. REQ_ADDS
 Add saved location
 REQ_ADDS{"userId": 2, "locationId": 5}
-
+-> {"success": 1}
 
 
 

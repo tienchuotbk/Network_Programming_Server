@@ -634,7 +634,9 @@ void *echo(void *arg)
                             json_decref(jsonArray);
                             json_decref(root);
                         }
-                    } else if(strcmp(keyString, "GET_STRG") == 0){
+                    }
+                    else if (strcmp(keyString, "GET_STRG") == 0)
+                    {
                         result = selectQuery(connection, query);
                         if (result == NULL)
                         {
@@ -837,6 +839,45 @@ void *echo(void *arg)
                             json_decref(root);
                         }
                     }
+                    else if (strcmp(keyString, "GET_RECO") == 0)
+                    {
+                        result = selectQuery(connection, query);
+                        if (result == NULL)
+                        {
+                            fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                        }
+                        unsigned long num_rows = mysql_num_rows(result);
+                        if (num_rows >= 0)
+                        {
+                            json_t *root = json_object();
+                            json_t *jsonArray = json_array();
+                            json_object_set_new(root, "success", json_integer(1));
+                            while ((row = mysql_fetch_row(result)) != NULL)
+                            {
+                                json_t *userObj = json_object();
+                                json_object_set_new(userObj, "id", json_integer(atoi(row[0])));
+                                json_object_set_new(userObj, "name", json_string(row[1]));
+                                json_object_set_new(userObj, "type", json_integer(atoi(row[2])));
+                                json_object_set_new(userObj, "address", json_string(row[3]));
+                                json_array_append_new(jsonArray, userObj);
+                            }
+                            json_object_set_new(root, "location", jsonArray);
+                            char *jsonString = json_dumps(root, JSON_ENCODE_ANY);
+                            bytes_sent = send(connfd, jsonString, (int)strlen(jsonString), 0); /* Send back to client */
+                            if (bytes_sent < 0)
+                            {
+                                perror("\nError: ");
+                            }
+                            free(jsonString);
+                            json_decref(jsonArray);
+                            json_decref(root);
+                        }
+                    }
                     else if (strcmp(keyString, "GET_FEED") == 0)
                     {
                         result = selectQuery(connection, query);
@@ -877,8 +918,9 @@ void *echo(void *arg)
                             json_decref(jsonArray);
                             json_decref(root);
                         }
-                        
-                    } else if(strcmp(keyString, "REQ_FOLW")==0){
+                    }
+                    else if (strcmp(keyString, "REQ_FOLW") == 0)
+                    {
                         long affected_rows = updateQuery(connection, query);
                         if (affected_rows == 0)
                         {
@@ -906,7 +948,9 @@ void *echo(void *arg)
                             }
                             json_decref(json);
                         }
-                    } else if(strcmp(keyString, "REQ_UNFL")==0){
+                    }
+                    else if (strcmp(keyString, "REQ_UNFL") == 0)
+                    {
                         long affected_rows = updateQuery(connection, query);
                         if (affected_rows == 0)
                         {
@@ -934,7 +978,9 @@ void *echo(void *arg)
                             }
                             json_decref(json);
                         }
-                    } else if(strcmp(keyString, "REQ_CINF") == 0){
+                    }
+                    else if (strcmp(keyString, "REQ_CINF") == 0)
+                    {
                         long affected_rows = updateQuery(connection, query);
                         if (affected_rows == 0)
                         {
@@ -962,7 +1008,9 @@ void *echo(void *arg)
                             }
                             json_decref(json);
                         }
-                    } else if(strcmp(keyString, "REQ_ADDF") == 0 || strcmp(keyString, "REQ_ADDS") == 0){
+                    }
+                    else if (strcmp(keyString, "REQ_ADDF") == 0 || strcmp(keyString, "REQ_ADDS") == 0)
+                    {
                         long affected_rows = updateQuery(connection, query);
                         if (affected_rows == 0)
                         {
