@@ -60,11 +60,11 @@ char *getQuerySQL(char *key, char *json_str)
         username = json_string_value(json_object_get(root, "username"));
         password = json_string_value(json_object_get(root, "password"));
         strcpy(temp, "");
-        strcat(temp, "INSERT INTO user (username, password) VALUES ('");
+        strcat(temp, "INSERT INTO user (username, password, name) VALUES ('");
         strcat(temp, username);
         strcat(temp, "', '");
         strcat(temp, password);
-        strcat(temp, "');");
+        strcat(temp, "', 'Guest');");
     }
     else if (strcmp(key, "REQ_CPAS") == 0)
     {
@@ -212,7 +212,7 @@ char *getQuerySQL(char *key, char *json_str)
     }
     else if(strcmp(key, "FIND_LOC") == 0){
         // SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> 2 AND l.name LIKE '%bach khoa%';
-        strcpy(temp, "SELECT l.id as locationId, u.id as userId, u.name as userName, l.name as locationName, l.type, l.address FROM location as l join user as u ON l.createdBy = u.id WHERE l.createdBy <> 0");
+        strcpy(temp, "SELECT l.id, l.name, l.type, l.address FROM location as l WHERE l.createdBy <> 0");
         string = json_string_value(json_object_get(root, "value"));
         if(strlen(string) != 0){
             strcat(temp, " AND l.name LIKE '%");

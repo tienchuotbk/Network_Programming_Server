@@ -397,12 +397,68 @@ void *echo(void *arg)
                         unsigned long num_rows = mysql_num_rows(result);
                         if (num_rows == 0)
                         {
-                            // Send wrong password or username to user
-                            bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
-                            if (bytes_sent < 0)
+                            int id;
+                            // objectString();
+                            json_error_t error;
+                            json_t *root = json_loads(objectString, 0, &error);
+                            if (!root)
                             {
-                                perror("\nError: ");
+                                fprintf(stderr, "JSON parsing error: %s\n", error.text);
+                                return NULL;
                             }
+                            id = json_integer_value(json_object_get(root, "locationId"));
+                            strcpy(tempStr, " Select l.id, l.createdBy as reporterId, u.name as reportName, l.name, l.type, l.address from location as l join user as u ON u.id = l.createdBy WHERE l.id =");
+                            sprintf(numStr, "%d", id);
+                            strcat(tempStr, numStr);
+                            strcat(tempStr, ";");
+                            result = selectQuery(connection, tempStr);
+                            if (result == NULL)
+                            {
+                                fprintf(stderr, "Failed to retrieve result set: %s\n", mysql_error(connection));
+                                bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                                if (bytes_sent < 0)
+                                {
+                                    perror("\nError: ");
+                                }
+                            }
+                            else
+                            {
+                                unsigned long num_rows = mysql_num_rows(result);
+                                if (result == 0)
+                                {
+                                    bytes_sent = send(connfd, json_str_fail, (int)strlen(json_str_fail), 0); /* Send back to client */
+                                    if (bytes_sent < 0)
+                                    {
+                                        perror("\nError: ");
+                                    }
+                                }
+                                else
+                                {
+                                    json_t *root = json_object();
+                                    json_t *array = json_array();
+                                    while ((row = mysql_fetch_row(result)) != NULL)
+                                    {
+                                        json_object_set_new(root, "id", json_integer(atoi(row[0])));
+                                        json_object_set_new(root, "createdUserId", json_integer(atoi(row[1])));
+                                        json_object_set_new(root, "createdUserName", json_string(row[2]));
+                                        json_object_set_new(root, "locationName", json_string(row[3]));
+                                        json_object_set_new(root, "type", json_integer(atoi(row[4])));
+                                        json_object_set_new(root, "address", json_string(row[5]));
+                                        break;
+                                    }
+                                    json_object_set_new(root, "comment", array);
+                                    json_str = json_dumps(root, JSON_ENCODE_ANY);
+                                    bytes_sent = send(connfd, json_str, (int)strlen(json_str), 0); /* Send back to client */
+                                    if (bytes_sent < 0)
+                                    {
+                                        perror("\nError: ");
+                                    }
+                                    json_decref(root);
+                                    json_decref(array);
+                                }
+                            }
+
+                            // If errro
                         }
                         else
                         {
@@ -819,12 +875,10 @@ void *echo(void *arg)
                             while ((row = mysql_fetch_row(result)) != NULL)
                             {
                                 json_t *userObj = json_object();
-                                json_object_set_new(userObj, "locationId", json_integer(atoi(row[0])));
-                                json_object_set_new(userObj, "userId", json_integer(atoi(row[1])));
-                                json_object_set_new(userObj, "userName", json_string(row[2]));
-                                json_object_set_new(userObj, "locationName", json_string(row[3]));
-                                json_object_set_new(userObj, "type", json_integer(atoi(row[4])));
-                                json_object_set_new(userObj, "address", json_string(row[5]));
+                                json_object_set_new(userObj, "id", json_integer(atoi(row[0])));
+                                json_object_set_new(userObj, "name", json_string(row[1]));
+                                json_object_set_new(userObj, "type", json_integer(atoi(row[2])));
+                                json_object_set_new(userObj, "address", json_string(row[3]));
                                 json_array_append_new(jsonArray, userObj);
                             }
                             json_object_set_new(root, "location", jsonArray);
