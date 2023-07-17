@@ -8,7 +8,7 @@ const char *query_create_db = "CREATE DATABASE IF NOT EXISTS socket";
 const char *query_drop_db = "DROP DATABASE IF EXISTS socket";
 const char *query_use_db = "USE socket";
 const char *query_create_table_1 = "CREATE TABLE user (id int PRIMARY KEY AUTO_INCREMENT, username varchar(255) UNIQUE,thread_address varchar(255), password varchar(55), name varchar(50), age int,phone varchar(25), address varchar(255) );";
-const char *query_create_table_2 = "CREATE TABLE friend (user1 INT, user2 INT, FOREIGN KEY (user1) REFERENCES user(id), FOREIGN KEY (user2) REFERENCES user(id));";
+const char *query_create_table_2 = "CREATE TABLE friend (user1 INT, user2 INT, PRIMARY KEY(user1, user2), FOREIGN KEY (user1) REFERENCES user(id), FOREIGN KEY (user2) REFERENCES user(id));";
 const char *query_create_table_3 = "CREATE TABLE locationType (id int PRIMARY KEY AUTO_INCREMENT, name varchar(125));";
 const char *query_create_table_4 = "CREATE TABLE location (id int PRIMARY KEY AUTO_INCREMENT,createdBy int, name varchar(255), type int, address varchar(255), view int DEFAULT 0, FOREIGN KEY (createdBy) REFERENCES user(id), FOREIGN KEY (type) REFERENCES locationType(id));";
 const char *query_create_table_5 = "CREATE TABLE review (id int PRIMARY KEY AUTO_INCREMENT,createdBy int,locationId int,content varchar(1000),FOREIGN KEY (createdBy) REFERENCES user(id),FOREIGN KEY (locationId) REFERENCES location(id));";
@@ -166,17 +166,20 @@ char *getQuerySQL(char *key, char *json_str)
         // userId
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
-        sprintf(numStr, "%d", userId);
-        strcat(temp, "SELECT DISTINCT id, name, age, phone, address  FROM friend JOIN user on friend.user2 = user.id WHERE friend.user1 =");
+        sprintf(numStr, "%d", userId);1;
+        strcat(temp, "SELECT DISTINCT id, name, age, phone, address FROM friend, user WHERE id IN (SELECT user2 FROM friend WHERE user1 = ");
+        strcat(temp, numStr);
+        strcat(temp, ") AND user.id <> ");
         strcat(temp, numStr);
         strcat(temp, ";");
     } else if(strcmp(key, "GET_STRG") == 0){
+        //SELECT DISTINCT id, name, age, phone, address FROM friend, user WHERE id NOT IN (SELECT user2 FROM friend WHERE user1 = 1) AND user.id <> 1;
         strcpy(temp, "");
         userId = json_integer_value(json_object_get(root, "userId"));
         sprintf(numStr, "%d", userId);1;
-        strcat(temp, "SELECT DISTINCT id, name, age, phone, address  FROM friend JOIN user on friend.user2 <> user.id WHERE friend.user1 =");
+        strcat(temp, "SELECT DISTINCT id, name, age, phone, address FROM friend, user WHERE id NOT IN (SELECT user2 FROM friend WHERE user1 = ");
         strcat(temp, numStr);
-        strcat(temp, " and user.id <> ");
+        strcat(temp, ") AND user.id <> ");
         strcat(temp, numStr);
         strcat(temp, ";");
     }
@@ -246,10 +249,6 @@ char *getQuerySQL(char *key, char *json_str)
         strcat(temp, numStr);
         strcat(temp, ",");
         strcat(temp, numStr2);
-        strcat(temp, "), (");
-        strcat(temp, numStr2);
-        strcat(temp, ",");
-        strcat(temp, numStr);
         strcat(temp, ");");
     } else if(strcmp(key, "REQ_UNFL")== 0){
         strcpy(temp, "");
@@ -257,15 +256,11 @@ char *getQuerySQL(char *key, char *json_str)
         sprintf(numStr, "%d", userId);
         number = json_integer_value(json_object_get(root, "friendId"));
         sprintf(numStr2, "%d", number);
-        strcat(temp, "DELETE FROM friend WHERE (user1 =");
+        strcat(temp, "DELETE FROM friend WHERE user1 =");
         strcat(temp, numStr);
         strcat(temp, " AND user2 =");
         strcat(temp, numStr2);
-        strcat(temp, ") OR (user1 =");
-        strcat(temp, numStr2);
-        strcat(temp, " AND user2 =");
-        strcat(temp, numStr);
-        strcat(temp, ");");
+        strcat(temp, ";");
     } else if(strcmp(key, "REQ_CINF") == 0){
         strcpy(temp, "UPDATE user SET name ='");
         string = json_string_value(json_object_get(root, "name"));

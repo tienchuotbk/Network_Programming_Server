@@ -90,12 +90,12 @@ int main(int argc, char *argv[])
 		printf("\nError!Can not connect to sever! Client exit imediately! ");
 		return 0;
 	}
-	if (pthread_create(&receive_thread, NULL, receiveMessages, &client_sock) != 0)
-	{
-		printf("Error creating receive thread.\n");
-		close(client_sock);
-		return 0;
-	}
+	// if (pthread_create(&receive_thread, NULL, receiveMessages, &client_sock) != 0)
+	// {
+	// 	printf("Error creating receive thread.\n");
+	// 	close(client_sock);
+	// 	return 0;
+	// }
 	printf("Enter username:(Press Enter to exit):\n");
 	while (1)
 	{

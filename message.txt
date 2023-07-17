@@ -70,6 +70,7 @@ REQ_UNFL{"userId": 1, "friendId": 3}
 -> {"success": 1}
 15. GET_STRG
 Lay list thong tin ng la (chua follow)
+GET_STRG{"userId": 3}
 {"success": 1, "stranger": [{"id": 3, "name": "Nguyen Duc Phuc", "age": 25, "phone": "0123895654", "address": "Sai Gon"}]}
 -> {"success": 1}
 16. REQ_CINF
