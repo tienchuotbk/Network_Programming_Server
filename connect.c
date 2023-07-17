@@ -60,11 +60,11 @@ char *getQuerySQL(char *key, char *json_str)
         username = json_string_value(json_object_get(root, "username"));
         password = json_string_value(json_object_get(root, "password"));
         strcpy(temp, "");
-        strcat(temp, "INSERT INTO user (username, password, name) VALUES ('");
+        strcat(temp, "INSERT INTO user (username, password, name, phone, age, address) VALUES ('");
         strcat(temp, username);
         strcat(temp, "', '");
         strcat(temp, password);
-        strcat(temp, "', 'Guest');");
+        strcat(temp, "', 'Guest', '0000000000', 20, 'Default address');");
     }
     else if (strcmp(key, "REQ_CPAS") == 0)
     {
