@@ -384,6 +384,22 @@ void *echo(void *arg)
                     {
                         // Requets get location infor
                         // locationId
+                        // Update view
+                        int locationId;
+                        json_error_t error_t;
+                        json_t *root_t = json_loads(objectString, 0, &error_t);
+                        if (!root_t)
+                        {
+                            fprintf(stderr, "JSON parsing error: %s\n", error_t.text);
+                            return NULL;
+                        }
+                        strcpy(tempStr, "UPDATE location SET view = view + 1 WHERE id =");
+                        locationId = json_integer_value(json_object_get(root_t, "locationId"));
+                        sprintf(numStr, "%d", locationId);
+                        strcat(tempStr, numStr);
+                        strcat(tempStr, ";");
+                        long update_result = updateQuery(connection, tempStr);
+
                         result = selectQuery(connection, query);
                         if (result == NULL)
                         {
@@ -459,6 +475,7 @@ void *echo(void *arg)
                             }
 
                             // If errro
+                            json_decref(root_t);
                         }
                         else
                         {
